@@ -1,0 +1,5 @@
+.Main {
+    flex: auto;
+    min-height: 400px;
+    background-color: blue;
+}
