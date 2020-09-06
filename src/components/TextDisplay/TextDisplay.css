@@ -1,0 +1,10 @@
+.TextDisplay {
+    font-size: 2rem;
+    width: 60vw;
+    min-width: 30rem;
+}
+
+.Word, .Letter {
+    display: inline-block;
+    color: var(--secondaryText);
+}
