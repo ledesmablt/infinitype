@@ -1,9 +1,8 @@
 .Header {
     height: 6rem;
-    text-align: center;
+    padding: 1rem 0rem;
 }
 
 .Header-title {
     font-size: 2rem;
-    padding: 1rem 0rem;
 }
