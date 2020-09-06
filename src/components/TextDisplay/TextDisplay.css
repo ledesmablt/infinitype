@@ -1,7 +1,16 @@
+:root {
+    --type-nlines: 3;
+    --type-size: 2rem;
+    --type-height: calc(var(--type-size) * 1.25);
+}
+
 .TextDisplay {
-    font-size: 2rem;
+    font-size: var(--type-size);
+    line-height: var(--type-height);
     width: 60vw;
     min-width: 30rem;
+    height: calc(var(--type-height) * var(--type-nlines));
+    overflow: hidden;
 }
 
 .Word, .Letter {
