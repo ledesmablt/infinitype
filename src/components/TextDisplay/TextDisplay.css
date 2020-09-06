@@ -8,7 +8,7 @@
     font-size: var(--type-size);
     line-height: var(--type-height);
     width: 60vw;
-    min-width: 30rem;
+    min-width: 50rem;
     height: calc(var(--type-height) * var(--type-nlines));
     overflow: hidden;
 }
