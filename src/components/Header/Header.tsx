@@ -5,7 +5,7 @@ import './Header.css';
 function Header() {
   return (
     <header className="Header">
-      Header
+      <div className="Header-title">infinitype</div>
     </header>
   )
 }
