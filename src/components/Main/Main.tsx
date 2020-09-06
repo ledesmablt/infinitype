@@ -1,11 +1,12 @@
 import React from 'react';
 
+import TextDisplay from '../TextDisplay';
 import './Main.css';
 
 function Main() {
   return (
     <main className="Main">
-      Main
+      <TextDisplay />
     </main>
   )
 }
