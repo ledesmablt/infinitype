@@ -15,14 +15,15 @@ function TextDisplay() {
     console.log(event.key);
   }
 
-  const wordBlocks = text.split(' ').map(word => (
+  const wordBlocks = text.split(' ').map((word, _wi) => (
     <div
       className="Word"
+      key={_wi}
       tabIndex={0}
       onKeyDown={trackKeyPress}
     >{
-      word.split('').map(letter => (
-        <div className="Letter">{letter}</div>
+      word.split('').map((letter, _li) => (
+        <div className="Letter" key={_li}>{letter}</div>
       ))
     }&nbsp;
     </div>
