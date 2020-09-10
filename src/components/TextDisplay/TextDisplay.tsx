@@ -23,6 +23,9 @@ function TextDisplay() {
   const currentAccuracy = useSelector(
     (state: RootState) => state.typedChars.charAccuracy
   );
+  const currentStats = useSelector(
+    (state: RootState) => state.typedChars.stats
+  )
 
   function trackKeyPress(event: React.KeyboardEvent): void {
     if (!RegExp(defaultValidChars).test(event.key)) {
@@ -94,6 +97,7 @@ function TextDisplay() {
       className="TextDisplay"
       onKeyDown={trackKeyPress}
     >
+      <p>{currentStats.correctChars} / {currentStats.totalChars}</p>
     {wordBlocks}
     </div>
   )

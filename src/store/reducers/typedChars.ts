@@ -10,12 +10,14 @@ interface TypedCharsStore {
   chars: string;
   wordBank: string;
   charAccuracy: string[][] | null;
+  stats: any;
 }
 
 const initialState: TypedCharsStore = {
   chars: '',
   wordBank: defaultText,
   charAccuracy: null,
+  stats: {},
 }
 
 function getAccuracyArray(state: TypedCharsStore): string[][] {
@@ -51,10 +53,30 @@ function getAccuracyArray(state: TypedCharsStore): string[][] {
 export default function(state=initialState, action: ActionType) {
   switch (action.type) {
     case 'UPDATE_ACCURACY': {
+      const defaultReduce = {
+        totalWords: 0,
+        correctWords: 0,
+        totalChars: 0,
+        correctChars: 0,
+      };
       const charAccuracy = getAccuracyArray(state);
+      const stats = charAccuracy.reduce((acc, wordAcc) => {
+          return {
+            totalWords: acc.totalWords + 1,
+            correctWords: acc.correctWords + (
+              wordAcc.filter(stat => stat !== 'CORRECT').length === 0 ? 1 : 0
+            ),
+            totalChars: acc.totalChars + wordAcc.length,
+            correctChars: acc.correctChars + (
+              wordAcc.filter(stat => stat === 'CORRECT').length
+            ),
+          }
+        }, defaultReduce)
+      console.log(stats);
       return {
         ...state,
         charAccuracy,
+        stats,
       }
     }
     case 'APPEND_CHAR': {
