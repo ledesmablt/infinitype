@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import './TextDisplay.css';
@@ -7,6 +7,12 @@ import { RootState } from '../../types/storeTypes';
 const defaultValidChars = /^([ A-Za-z0-9_@./#&+-]|Backspace|Tab)$/
 
 function TextDisplay() {
+  const focusRef = useRef(null);
+  useEffect(() => {
+    // @ts-ignore
+    focusRef.current.focus();
+  }, [focusRef])
+
   const dispatch = useDispatch();
   const currentTypedText = useSelector(
     (state: RootState) => state.typedChars.chars
@@ -42,7 +48,7 @@ function TextDisplay() {
         className="Word"
         key={_wi}
         tabIndex={0}
-        onKeyDown={trackKeyPress}
+        ref={_wi === 0 ? focusRef : null}
       >{
         longestWordArray.map((_li) => {
           const typedChar = typedWord.charAt(_li);
@@ -75,8 +81,11 @@ function TextDisplay() {
   });
 
   return (
-    <div className="TextDisplay">
-      {wordBlocks}
+    <div
+      className="TextDisplay"
+      onKeyDown={trackKeyPress}
+    >
+    {wordBlocks}
     </div>
   )
   
