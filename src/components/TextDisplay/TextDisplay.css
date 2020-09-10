@@ -16,6 +16,7 @@
 .Word, .Letter {
     display: inline-block;
     color: var(--secondaryText);
+    outline: none;
 }
 
 .Letter.correct {
