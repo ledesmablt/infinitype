@@ -20,26 +20,46 @@ function TextDisplay() {
     if (!RegExp(defaultValidChars).test(event.key)) {
       return
     }
+    let dispatchContent;
     if (event.key === 'Backspace') {
-      dispatch({ type: 'DELETE_CHAR'});
+      dispatchContent = { type: 'DELETE_CHAR'};
     } else {
-      dispatch({type: 'APPEND_CHAR', payload: event.key });
+      dispatchContent = {type: 'APPEND_CHAR', payload: event.key };
     }
+    dispatch(dispatchContent);
   }
 
-  const wordBlocks = currentWordBank.split(' ').map((word, _wi) => (
-    <div
-      className="Word"
-      key={_wi}
-      tabIndex={0}
-      onKeyDown={trackKeyPress}
-    >{
-      word.split('').map((letter, _li) => (
-        <div className="Letter" key={_li}>{letter}</div>
-      ))
-    }&nbsp;
-    </div>
-  ));
+  const typedTextBlocks = currentTypedText.split(' ');
+  const wordBlocks = currentWordBank.split(' ').map((word, _wi) => {
+    const targetWord = typedTextBlocks[_wi];
+    const charBlocks = (targetWord || '').split('');
+    return (
+      <div
+        className="Word"
+        key={_wi}
+        tabIndex={0}
+        onKeyDown={trackKeyPress}
+      >{
+        word.split('').map((letter, _li) => {
+          let letterClass = 'Letter';
+          const targetChar = charBlocks[_li];
+          if (letter === targetChar) {
+            letterClass += ' correct';
+          } else if (
+            typeof targetChar !== 'undefined' &&
+            typeof targetWord !== 'undefined'
+          ) {
+            letterClass += ' wrong';
+          }
+
+          return (
+            <div className={letterClass} key={_li}>{letter}</div>
+          ) 
+        })
+      }&nbsp;
+      </div>
+    )
+  });
 
   return (
     <div className="TextDisplay">

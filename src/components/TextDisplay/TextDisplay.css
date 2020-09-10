@@ -17,3 +17,11 @@
     display: inline-block;
     color: var(--secondaryText);
 }
+
+.Letter.correct {
+    color: var(--primaryText);
+}
+
+.Letter.wrong {
+    color: var(--errText);
+}
