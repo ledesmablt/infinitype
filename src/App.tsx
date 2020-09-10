@@ -1,31 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import './App.css';
+import React, { useEffect } from 'react';
+import { Provider } from 'react-redux';
 
-import AppContext from './context';
 import Header from './components/Header';
 import Main from './components/Main';
 import Footer from './components/Footer';
+import store from './store';
+import './App.css';
 import { changeTheme } from './utils/themes';
 
-const defaultContext = {
-  theme: 'dracula',
-};
-
 function App() {
-  const [ theme ] = useState('dracula');
-
   useEffect(() => {
-    console.log('changing theme');
-    changeTheme(theme);
-  }, [theme]);
+    // ideally this would be done in the store
+    changeTheme('dracula');
+  }, [])
 
   return (
     <div className="App">
-      <AppContext.Provider value={defaultContext}>
+      <Provider store={store}>
         <Header />
         <Main />
         <Footer />
-      </AppContext.Provider>
+      </Provider>
     </div>
   );
 }
