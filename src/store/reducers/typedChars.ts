@@ -7,21 +7,21 @@ const defaultText = 'the quick brown fox jumps over the lazy dog '
   .repeat(8).trim();
 
 interface TypedCharsStore {
-  chars: string;
+  currentTypedText: string;
   wordBank: string;
   charAccuracy: string[][] | null;
-  stats: any;
+  currentStats: any;
 }
 
 const initialState: TypedCharsStore = {
-  chars: '',
+  currentTypedText: '',
   wordBank: defaultText,
   charAccuracy: null,
-  stats: {},
+  currentStats: {},
 }
 
 function getAccuracyArray(state: TypedCharsStore): string[][] {
-  const typedWords = state.chars.split(' ');
+  const typedWords = state.currentTypedText.split(' ');
   const targetWords = state.wordBank.split(' ');
 
   const accuracyArray = typedWords.map((typedWord, _wi) => {
@@ -60,7 +60,7 @@ export default function(state=initialState, action: ActionType) {
         correctChars: 0,
       };
       const charAccuracy = getAccuracyArray(state);
-      const stats = charAccuracy.reduce((acc, wordAcc) => {
+      const currentStats = charAccuracy.reduce((acc, wordAcc) => {
           return {
             totalWords: acc.totalWords + 1,
             correctWords: acc.correctWords + (
@@ -72,34 +72,33 @@ export default function(state=initialState, action: ActionType) {
             ),
           }
         }, defaultReduce)
-      console.log(stats);
       return {
         ...state,
         charAccuracy,
-        stats,
+        currentStats,
       }
     }
     case 'APPEND_CHAR': {
-      const lastChar = state.chars.charAt(state.chars.length-1);
+      const lastChar = state.currentTypedText.charAt(state.currentTypedText.length-1);
       if (action.payload === ' ' && lastChar === ' ') {
         // ignore double space
         return state
       }
       return {
         ...state,
-        chars: state.chars + action.payload,
+        currentTypedText: state.currentTypedText + action.payload,
       }
     }
     case 'DELETE_CHAR': {
       return {
         ...state,
-        chars: state.chars.slice(0,-1),
+        currentTypedText: state.currentTypedText.slice(0,-1),
       }
     }
     case 'CLEAR_TYPED_CHARS': {
       return {
         ...state,
-        chars: initialState.chars,
+        currentTypedText: initialState.currentTypedText,
       };
     }
 

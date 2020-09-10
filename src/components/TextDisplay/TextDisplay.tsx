@@ -14,18 +14,12 @@ function TextDisplay() {
   }, [focusRef])
 
   const dispatch = useDispatch();
-  const currentTypedText = useSelector(
-    (state: RootState) => state.typedChars.chars
-  );
-  const currentWordBank = useSelector(
-    (state: RootState) => state.typedChars.wordBank
-  );
-  const currentAccuracy = useSelector(
-    (state: RootState) => state.typedChars.charAccuracy
-  );
-  const currentStats = useSelector(
-    (state: RootState) => state.typedChars.stats
-  )
+  const {
+    currentTypedText,
+    charAccuracy,
+    wordBank,
+    currentStats,
+  } = useSelector((state: RootState) => state.typedChars);
 
   function trackKeyPress(event: React.KeyboardEvent): void {
     if (!RegExp(defaultValidChars).test(event.key)) {
@@ -45,7 +39,7 @@ function TextDisplay() {
 
   // render elements
   const typedTextBlocks = currentTypedText.split(' ');
-  const wordBlocks = currentWordBank.split(' ').map((targetWord, _wi) => {
+  const wordBlocks = wordBank.split(' ').map((targetWord, _wi) => {
     const typedWord = (typedTextBlocks[_wi] || '');
     const longestWordArray = [
       ...Array(Math.max(targetWord.length, typedWord.length))
@@ -59,9 +53,9 @@ function TextDisplay() {
         ref={_wi === 0 ? focusRef : null}
       >{
         longestWordArray.map((_li) => {
-          const charAccuracy = ((currentAccuracy || [])[_wi] || [])[_li];
+          const currentAccuracy = ((charAccuracy || [])[_wi] || [])[_li];
           let letterClass = 'Letter';
-          switch (charAccuracy) {
+          switch (currentAccuracy) {
             case 'CORRECT': {
               letterClass += ' correct';
               break;
@@ -98,7 +92,7 @@ function TextDisplay() {
       onKeyDown={trackKeyPress}
     >
       <p>{currentStats.correctChars} / {currentStats.totalChars}</p>
-    {wordBlocks}
+      {wordBlocks}
     </div>
   )
   
