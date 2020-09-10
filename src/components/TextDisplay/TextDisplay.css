@@ -23,6 +23,10 @@
     color: var(--primaryText);
 }
 
-.Letter.wrong {
+.Letter.wrong, .Letter.wrong-overtype {
     color: var(--errText);
+}
+
+.Letter.wrong-overtype {
+    opacity: 0.75;
 }

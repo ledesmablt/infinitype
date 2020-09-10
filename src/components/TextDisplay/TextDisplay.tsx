@@ -31,9 +31,12 @@ function TextDisplay() {
   }
 
   const typedTextBlocks = currentTypedText.split(' ');
-  const wordBlocks = currentWordBank.split(' ').map((word, _wi) => {
-    const targetWord = typedTextBlocks[_wi];
-    const charBlocks = (targetWord || '').split('');
+  const wordBlocks = currentWordBank.split(' ').map((targetWord, _wi) => {
+    const typedWord = (typedTextBlocks[_wi] || '');
+    const longestWordArray = [
+      ...Array(Math.max(targetWord.length, typedWord.length))
+      .keys()
+    ];
     return (
       <div
         className="Word"
@@ -41,20 +44,29 @@ function TextDisplay() {
         tabIndex={0}
         onKeyDown={trackKeyPress}
       >{
-        word.split('').map((letter, _li) => {
+        longestWordArray.map((_li) => {
+          const typedChar = typedWord.charAt(_li);
+          const targetChar = targetWord.charAt(_li);
           let letterClass = 'Letter';
-          const targetChar = charBlocks[_li];
-          if (letter === targetChar) {
+          if (typedChar === targetChar) {
             letterClass += ' correct';
           } else if (
-            typeof targetChar !== 'undefined' &&
-            typeof targetWord !== 'undefined'
+            typedChar !== targetChar &&
+            typedChar.length > 0 &&
+            _li < targetWord.length
           ) {
             letterClass += ' wrong';
+          } else if (_li >= targetWord.length) {
+            letterClass += ' wrong-overtype';
           }
 
           return (
-            <div className={letterClass} key={_li}>{letter}</div>
+            <div
+              className={letterClass}
+              key={_li}
+            >
+              {targetChar || typedChar}
+            </div>
           ) 
         })
       }&nbsp;
