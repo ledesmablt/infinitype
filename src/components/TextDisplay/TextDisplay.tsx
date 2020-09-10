@@ -1,21 +1,33 @@
 import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 
 import './TextDisplay.css';
+import { RootState } from '../../types/storeTypes';
 
 const defaultValidChars = /^([ A-Za-z0-9_@./#&+-]|Backspace|Tab)$/
 
 function TextDisplay() {
-  const text = 'the quick brown fox jumps over the lazy dog '
-    .repeat(8).trim();
+  const dispatch = useDispatch();
+  const currentTypedText = useSelector(
+    (state: RootState) => state.typedChars.chars
+  );
+  const currentWordBank = useSelector(
+    (state: RootState) => state.wordBank.words
+  )
+  console.log(currentTypedText);
 
   function trackKeyPress(event: React.KeyboardEvent): void {
     if (!RegExp(defaultValidChars).test(event.key)) {
       return
     }
-    console.log(event.key);
+    if (event.key === 'Backspace') {
+      dispatch({ type: 'DELETE_CHAR'});
+    } else {
+      dispatch({type: 'APPEND_CHAR', payload: event.key });
+    }
   }
 
-  const wordBlocks = text.split(' ').map((word, _wi) => (
+  const wordBlocks = currentWordBank.split(' ').map((word, _wi) => (
     <div
       className="Word"
       key={_wi}
