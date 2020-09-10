@@ -13,8 +13,7 @@ function TextDisplay() {
   );
   const currentWordBank = useSelector(
     (state: RootState) => state.wordBank.words
-  )
-  console.log(currentTypedText);
+  );
 
   function trackKeyPress(event: React.KeyboardEvent): void {
     if (!RegExp(defaultValidChars).test(event.key)) {
@@ -22,7 +21,9 @@ function TextDisplay() {
     }
     let dispatchContent;
     if (event.key === 'Backspace') {
-      dispatchContent = { type: 'DELETE_CHAR'};
+      dispatchContent = { type: 'DELETE_CHAR' };
+    } else if (event.key === 'Tab') {
+      dispatchContent = { type: 'CLEAR_TYPED_CHARS' };
     } else {
       dispatchContent = {type: 'APPEND_CHAR', payload: event.key };
     }

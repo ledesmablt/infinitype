@@ -27,6 +27,9 @@ export default function(state=initialState, action: ActionType) {
         chars: state.chars.slice(0,-1),
       }
     }
+    case 'CLEAR_TYPED_CHARS': {
+      return initialState;
+    }
     default:
       return state;
   }
