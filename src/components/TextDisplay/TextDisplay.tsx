@@ -18,7 +18,7 @@ function TextDisplay() {
     (state: RootState) => state.typedChars.chars
   );
   const currentWordBank = useSelector(
-    (state: RootState) => state.wordBank.words
+    (state: RootState) => state.typedChars.wordBank
   );
 
   function trackKeyPress(event: React.KeyboardEvent): void {
@@ -34,6 +34,7 @@ function TextDisplay() {
       dispatchContent = {type: 'APPEND_CHAR', payload: event.key };
     }
     dispatch(dispatchContent);
+    dispatch({ type: 'UPDATE_ACCURACY' });
   }
 
   const typedTextBlocks = currentTypedText.split(' ');
