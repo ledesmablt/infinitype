@@ -7,12 +7,15 @@ import { RootState } from '../../types/storeTypes';
 const defaultValidChars = /^([ A-Za-z0-9_@./#&+-]|Backspace|Tab)$/
 
 function TextDisplay() {
+  const firstWordRef = useRef<HTMLDivElement>(null);
   const currentWordRef = useRef<HTMLDivElement>(null);
+  const visibleAreaRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
   const [ wordIndex, setWordIndex ] = useState(0);
   const [ currentRow, setCurrentRow ] = useState(0);
   const [ currentRect, setCurrentRect ] = useState<DOMRect | undefined>();
   const [ initialRect, setInitialRect ] = useState<DOMRect | undefined>();
+  const [ textContainerStyle, setTextContainerStyle ] = useState<any>({});
   const {
     currentTypedText,
     charAccuracy,
@@ -22,7 +25,6 @@ function TextDisplay() {
 
   // get current word & rect
   useEffect(() => {
-    currentWordRef.current?.focus();
     setCurrentRect(
       currentWordRef.current?.getBoundingClientRect()
     );
@@ -30,11 +32,14 @@ function TextDisplay() {
 
   // set initial rect
   useEffect(() => {
-    console.log(wordIndex, currentWordRef.current?.textContent);
-    (wordIndex === 0) && setInitialRect(
-      currentWordRef.current?.getBoundingClientRect()
-    );
-  }, [wordIndex]);
+    if (firstWordRef) {
+      console.log('resetting');
+      setInitialRect(
+        firstWordRef.current?.getBoundingClientRect()
+      );
+    firstWordRef.current?.focus();
+    }
+  }, [firstWordRef]);
 
   // adjust row count based on current vs initial rect
   useEffect(() => {
@@ -45,9 +50,17 @@ function TextDisplay() {
       (currentRect!.top - initialRect!.top)
       / initialRect!.height
     );
-    (currentRow !== rowCount) && setCurrentRow(rowCount);
-    console.log(rowCount);
-  }, [currentRow, initialRect, currentRect]);
+    const offsetHeight = (
+      (textContainerStyle.top || initialRect!.top)
+      - initialRect!.top
+    );
+    if (currentRow !== rowCount) {
+      setCurrentRow(rowCount);
+      setTextContainerStyle({
+        top: initialRect!.top - initialRect!.height * rowCount + offsetHeight,
+      });
+    }
+  }, [currentRow, initialRect, currentRect, textContainerStyle]);
 
   function trackKeyPress(event: React.KeyboardEvent): void {
     if (!RegExp(defaultValidChars).test(event.key)) {
@@ -82,7 +95,10 @@ function TextDisplay() {
         className="Word"
         key={_wi}
         tabIndex={0}
-        ref={_wi === wordIndex ? currentWordRef : null}
+        ref={
+        _wi === 0 ? firstWordRef
+          : (_wi === wordIndex ? currentWordRef : null)
+        }
       >{
         longestWordArray.map((_li) => {
           const currentAccuracy = ((charAccuracy || [])[_wi] || [])[_li];
@@ -123,8 +139,14 @@ function TextDisplay() {
       className="TextDisplay"
       onKeyDown={trackKeyPress}
     >
-      {/* <p>{currentStats.correctChars} / {currentStats.totalChars}</p> */}
-      {wordBlocks}
+      <div
+        className="TextDisplay-inner"
+        style={textContainerStyle}
+        ref={visibleAreaRef}
+      >
+        {/* <p>{currentStats.correctChars} / {currentStats.totalChars}</p> */}
+        {wordBlocks}
+      </div>
     </div>
   )
   

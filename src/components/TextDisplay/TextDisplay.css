@@ -12,6 +12,12 @@
     height: calc(var(--type-height) * var(--type-nlines));
     overflow: hidden;
     margin-top: 80px;
+    z-index: 2;
+}
+
+.TextDisplay-inner {
+    position: absolute;
+    z-index: 1;
 }
 
 .Word, .Letter {
