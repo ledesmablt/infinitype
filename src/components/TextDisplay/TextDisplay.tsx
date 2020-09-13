@@ -10,6 +10,9 @@ function TextDisplay() {
   const currentWordRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
   const [ wordIndex, setWordIndex ] = useState(0);
+  const [ currentRow, setCurrentRow ] = useState(0);
+  const [ currentRect, setCurrentRect ] = useState<DOMRect | undefined>();
+  const [ initialRect, setInitialRect ] = useState<DOMRect | undefined>();
   const {
     currentTypedText,
     charAccuracy,
@@ -17,13 +20,34 @@ function TextDisplay() {
     currentStats,
   } = useSelector((state: RootState) => state.typedChars);
 
+  // get current word & rect
   useEffect(() => {
     currentWordRef.current?.focus();
+    setCurrentRect(
+      currentWordRef.current?.getBoundingClientRect()
+    );
   }, [currentWordRef, wordIndex])
 
+  // set initial rect
   useEffect(() => {
     console.log(wordIndex, currentWordRef.current?.textContent);
+    (wordIndex === 0) && setInitialRect(
+      currentWordRef.current?.getBoundingClientRect()
+    );
   }, [wordIndex]);
+
+  // adjust row count based on current vs initial rect
+  useEffect(() => {
+    if (!currentRect || !initialRect) {
+      return;
+    }
+    const rowCount = (
+      (currentRect!.top - initialRect!.top)
+      / initialRect!.height
+    );
+    (currentRow !== rowCount) && setCurrentRow(rowCount);
+    console.log(rowCount);
+  }, [currentRow, initialRect, currentRect]);
 
   function trackKeyPress(event: React.KeyboardEvent): void {
     if (!RegExp(defaultValidChars).test(event.key)) {
