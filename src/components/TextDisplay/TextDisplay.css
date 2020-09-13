@@ -11,6 +11,7 @@
     min-width: 50rem;
     height: calc(var(--type-height) * var(--type-nlines));
     overflow: hidden;
+    margin-top: 80px;
 }
 
 .Word, .Letter {

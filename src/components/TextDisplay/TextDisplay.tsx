@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import './TextDisplay.css';
@@ -7,19 +7,23 @@ import { RootState } from '../../types/storeTypes';
 const defaultValidChars = /^([ A-Za-z0-9_@./#&+-]|Backspace|Tab)$/
 
 function TextDisplay() {
-  const focusRef = useRef(null);
-  useEffect(() => {
-    // @ts-ignore
-    focusRef.current.focus();
-  }, [focusRef])
-
+  const currentWordRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
+  const [ wordIndex, setWordIndex ] = useState(0);
   const {
     currentTypedText,
     charAccuracy,
     wordBank,
     currentStats,
   } = useSelector((state: RootState) => state.typedChars);
+
+  useEffect(() => {
+    currentWordRef.current?.focus();
+  }, [currentWordRef, wordIndex])
+
+  useEffect(() => {
+    console.log(wordIndex, currentWordRef.current?.textContent);
+  }, [wordIndex]);
 
   function trackKeyPress(event: React.KeyboardEvent): void {
     if (!RegExp(defaultValidChars).test(event.key)) {
@@ -40,6 +44,10 @@ function TextDisplay() {
   // render elements
   const typedTextBlocks = currentTypedText.split(' ');
   const wordBlocks = wordBank.split(' ').map((targetWord, _wi) => {
+    const currentWordIndex = typedTextBlocks.length - 1;
+    if (currentWordIndex !== wordIndex) {
+      setWordIndex(currentWordIndex);
+    }
     const typedWord = (typedTextBlocks[_wi] || '');
     const longestWordArray = [
       ...Array(Math.max(targetWord.length, typedWord.length))
@@ -50,7 +58,7 @@ function TextDisplay() {
         className="Word"
         key={_wi}
         tabIndex={0}
-        ref={_wi === 0 ? focusRef : null}
+        ref={_wi === wordIndex ? currentWordRef : null}
       >{
         longestWordArray.map((_li) => {
           const currentAccuracy = ((charAccuracy || [])[_wi] || [])[_li];
@@ -91,7 +99,7 @@ function TextDisplay() {
       className="TextDisplay"
       onKeyDown={trackKeyPress}
     >
-      <p>{currentStats.correctChars} / {currentStats.totalChars}</p>
+      {/* <p>{currentStats.correctChars} / {currentStats.totalChars}</p> */}
       {wordBlocks}
     </div>
   )
