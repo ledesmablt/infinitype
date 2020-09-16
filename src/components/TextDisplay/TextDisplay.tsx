@@ -17,7 +17,7 @@ function TextDisplay() {
     currentTypedWords,
     charAccuracyArray,
     currentTargetWords,
-    currentStats,
+    // currentStats,
   } = useSelector((state: RootState) => state.typedWords);
 
   // first render
