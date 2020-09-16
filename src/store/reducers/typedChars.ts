@@ -1,6 +1,7 @@
 interface ActionType {
   type: string;
   payload: string;
+  topRow?: string[];
 }
 
 const defaultText = 'the quick brown fox jumps over the lazy dog '
@@ -95,6 +96,15 @@ export default function(state=initialState, action: ActionType) {
         currentTypedText: state.currentTypedText.slice(0,-1),
       }
     }
+    case 'POP_TOP_ROW': {
+      const numRows = action.topRow?.length;
+      const sliceRow = (text: string) => text.split(' ').slice(numRows,).join(' ');
+      return {
+        ...state,
+        currentTypedText: sliceRow(state.currentTypedText),
+        wordBank: sliceRow(state.wordBank),
+      }
+    }
     case 'CLEAR_TYPED_CHARS': {
       return {
         ...state,
@@ -105,7 +115,7 @@ export default function(state=initialState, action: ActionType) {
     case 'CHANGE_WORDS': {
       return {
         ...state,
-        wordBank: state.wordBank = action.payload,
+        wordBank: action.payload,
       }
     }
 

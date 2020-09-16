@@ -56,11 +56,35 @@ function TextDisplay() {
     );
     if (currentRow !== rowCount) {
       setCurrentRow(rowCount);
-      setTextContainerStyle({
-        top: initialRect!.top - initialRect!.height * rowCount + offsetHeight,
-      });
+      console.log(rowCount)
+      if (rowCount >= 1) {
+        setTextContainerStyle({
+          top: initialRect!.top - initialRect!.height * rowCount + offsetHeight,
+        });
+      }
     }
   }, [currentRow, initialRect, currentRect, textContainerStyle]);
+
+  // on reaching last row, pop first row
+  useEffect(() => {
+    if (currentRow !== 2 || !visibleAreaRef) {
+      return
+    } 
+    const topRowOffset = visibleAreaRef.current?.getBoundingClientRect().top;
+    let topRowWords = [];
+    for (let wordElem of document.getElementsByClassName('Word')) {
+      if (wordElem.getBoundingClientRect().top === topRowOffset) {
+        topRowWords.push(wordElem.textContent?.trim());
+      }
+    }
+    const topRowTypedWords = currentTypedText
+      .split(' ')
+      .slice(0, topRowWords.length);
+
+    dispatch({ type: 'POP_TOP_ROW', payload: '', topRow: topRowTypedWords});
+    dispatch({ type: 'UPDATE_ACCURACY' });
+
+  }, [currentRow, visibleAreaRef]);
 
   function trackKeyPress(event: React.KeyboardEvent): void {
     if (!RegExp(defaultValidChars).test(event.key)) {

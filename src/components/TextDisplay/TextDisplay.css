@@ -7,17 +7,15 @@
 .TextDisplay {
     font-size: var(--type-size);
     line-height: var(--type-height);
-    width: 60vw;
-    min-width: 50rem;
+    width: 60rem;
     height: calc(var(--type-height) * var(--type-nlines));
     overflow: hidden;
     margin-top: 80px;
-    z-index: 2;
 }
 
 .TextDisplay-inner {
-    position: absolute;
-    z-index: 1;
+    height: calc(var(--type-height) * (var(--type-nlines) + 2));
+    overflow: hidden;
 }
 
 .Word, .Letter {
