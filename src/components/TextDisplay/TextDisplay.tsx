@@ -16,7 +16,7 @@ function TextDisplay() {
   const {
     currentTypedWords,
     charAccuracyArray,
-    wordBank,
+    currentTargetWords,
     currentStats,
   } = useSelector((state: RootState) => state.typedWords);
 
@@ -95,7 +95,7 @@ function TextDisplay() {
 
   // render elements
   const typedTextBlocks = currentTypedWords.split(' ');
-  const wordBlocks = wordBank.split(' ').map((targetWord, _wi) => {
+  const wordBlocks = currentTargetWords.split(' ').map((targetWord, _wi) => {
     const typedWord = (typedTextBlocks[_wi] || '');
     const longestWordArray = [
       ...Array(Math.max(targetWord.length, typedWord.length))

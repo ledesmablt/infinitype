@@ -1,15 +1,15 @@
+const DEFAULT_TEXT = 'the quick brown fox jumps over lazy dog';
+const MIN_CHARS_WORDBANK = 120 * 5;
+
 interface ActionType {
   type: string;
   payload: any;
 }
 
-const defaultText = 'the quick brown fox jumps over the lazy dog '
-  .repeat(8).trim();
-
 interface TypedWordsStore {
   currentTypedWords: string;
-  initialWordBank: string;
-  wordBank: string;
+  wordPool: string;
+  currentTargetWords: string;
   charAccuracyArray?: string[][];
   currentStats: any;
   typedWordsHistory: string[];
@@ -17,15 +17,43 @@ interface TypedWordsStore {
 
 const initialState: TypedWordsStore = {
   currentTypedWords: '',
-  initialWordBank: defaultText,
-  wordBank: defaultText,
+  wordPool: DEFAULT_TEXT,
+  currentTargetWords: generateTargetWords(DEFAULT_TEXT),
   currentStats: {},
   typedWordsHistory: [],
 }
 
+function arrUnique<T>(array: T[]): T[] {
+  return array.filter((item, i, ar) => ar.indexOf(item) === i);
+}
+
+function generateTargetWords(text: string, startingText=''): string {
+  const textArr = arrUnique(text.split(' '));
+  if (textArr.length < 2) {
+    // ensure text array is of sufficient length
+    for (let word of DEFAULT_TEXT.split(' ')) {
+      textArr.push(word);
+    }
+  }
+  var outputText = startingText;
+  var lastRandN = -1;
+  while (outputText.length < MIN_CHARS_WORDBANK) {
+    let randN = Math.floor(Math.random() * textArr.length);
+    if (randN === lastRandN) {
+      // disallow duplicate words in succession
+      continue;
+    }
+    outputText += ` ${textArr[randN]}`;
+    lastRandN = randN;
+  }
+
+  console.log('words', outputText.split(' ').length);
+  return outputText.trim();
+}
+
 function getAccuracyArray(state: TypedWordsStore): string[][] {
   const typedWords = state.currentTypedWords.split(' ');
-  const targetWords = state.wordBank.split(' ');
+  const targetWords = state.currentTargetWords.split(' ');
 
   const accuracyArray = typedWords.map((typedWord, _wi) => {
     const targetWord = targetWords[_wi];
@@ -105,20 +133,26 @@ export default function(state=initialState, action: ActionType) {
       return {
         ...state,
         currentTypedWords: sliceRow(state.currentTypedWords),
-        wordBank: sliceRow(state.wordBank),
+        currentTargetWords: generateTargetWords(
+          state.wordPool,
+          sliceRow(state.currentTargetWords)
+        ),
         charAccuracyArray: state.charAccuracyArray?.slice(topRow.length,),
         typedWordsHistory: state.typedWordsHistory.concat(topRow),
       }
     }
     case 'CLEAR_TYPED_CHARS': {
-      return initialState;
+      return {
+        ...initialState,
+        currentTargetWords: generateTargetWords(initialState.wordPool),
+      }
     }
 
     case 'CHANGE_WORDS': {
       return {
         ...state,
-        initialWordBank: (action.payload as string),
-        wordBank: (action.payload as string),
+        wordPool: (action.payload as string),
+        currentTargetWords: generateTargetWords(action.payload as string),
       }
     }
 
