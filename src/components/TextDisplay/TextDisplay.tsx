@@ -17,6 +17,7 @@ function TextDisplay() {
   const currentLetterRef = useRef<HTMLDivElement>(null);
   const visibleAreaRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
+  const [ lastAction, setLastAction ] = useState('');
   const [ wordIndex, setWordIndex ] = useState(0);
   const [ currentRow, setCurrentRow ] = useState(0);
   const [ caretPosition, setCaretPosition ] = useState<CaretPosition>({});
@@ -47,18 +48,25 @@ function TextDisplay() {
     // update caret
     function calcCaretPosition() {
       let rect;
-      let caretPos;
+      let caretPos: CaretPosition = {};
       if (currentLetterRef.current) {
+        // after current letter
         rect = currentLetterRef.current.getBoundingClientRect();
         caretPos = {
           top: `${rect.top + 4}px`,
           left: `calc(${rect.left + 2}px + var(--type-size)/2)`,
         };
+      } else if (currentTypedWords.length > 0) {
+        // caret on space edge case
+        caretPos.top = caretPosition?.top;
+        const operand = lastAction === 'APPEND_CHAR' ? '+' : '-';
+        caretPos.left = `calc(${caretPosition.left} ${operand} var(--type-size)/2)`
       } else {
+        // first word
         rect = firstWordRef.current!.getBoundingClientRect();
         caretPos = {
           top: `${rect.top + 3}px`,
-          left: `calc(${rect.left + 2}px`,
+          left: `calc(${rect.left - 2}px`,
         }
       }
       return caretPos;
@@ -120,6 +128,7 @@ function TextDisplay() {
     }
     dispatch(dispatchContent);
     dispatch({ type: 'UPDATE_ACCURACY' });
+    setLastAction(dispatchContent.type);
   }
 
   // render elements
