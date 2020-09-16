@@ -35,3 +35,9 @@
 .Letter.wrong-overtype {
     opacity: 0.75;
 }
+
+.Caret {
+    position: absolute;
+    height: var(--type-size);
+    border-left: 3px solid gold;
+}

@@ -6,13 +6,20 @@ import { RootState } from '../../types/storeTypes';
 
 const defaultValidChars = /^([ A-Za-z0-9_@./#&+-]|Backspace|Tab)$/
 
+interface CaretPosition {
+  top?: string;
+  left?: string;
+}
+
 function TextDisplay() {
   const firstWordRef = useRef<HTMLDivElement>(null);
   const currentWordRef = useRef<HTMLDivElement>(null);
+  const currentLetterRef = useRef<HTMLDivElement>(null);
   const visibleAreaRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
   const [ wordIndex, setWordIndex ] = useState(0);
   const [ currentRow, setCurrentRow ] = useState(0);
+  const [ caretPosition, setCaretPosition ] = useState<CaretPosition>({});
   const {
     currentTypedWords,
     charAccuracyArray,
@@ -36,6 +43,28 @@ function TextDisplay() {
     if (currentWordIndex !== wordIndex) {
       setWordIndex(currentWordIndex);
     }
+    
+    // update caret
+    function calcCaretPosition() {
+      let rect;
+      let caretPos;
+      if (currentLetterRef.current) {
+        rect = currentLetterRef.current.getBoundingClientRect();
+        caretPos = {
+          top: `${rect.top + 4}px`,
+          left: `calc(${rect.left + 2}px + var(--type-size)/2)`,
+        };
+      } else {
+        rect = firstWordRef.current!.getBoundingClientRect();
+        caretPos = {
+          top: `${rect.top + 3}px`,
+          left: `calc(${rect.left + 2}px`,
+        }
+      }
+      return caretPos;
+    }
+    setCaretPosition(calcCaretPosition());
+
 
     // update row count
     if (!firstWordRef.current || !currentWordRef.current) {
@@ -52,7 +81,7 @@ function TextDisplay() {
     }
 
   // eslint-disable-next-line
-  }, [currentTypedWords]);
+  }, [currentTypedWords, firstWordRef, currentWordRef]);
 
   // on row change
   useEffect(() => {
@@ -130,11 +159,15 @@ function TextDisplay() {
           }
           const typedChar = typedWord.charAt(_li);
           const targetChar = targetWord.charAt(_li);
-
+          const isCurrentLetter = (
+            _wi === typedTextBlocks.length - 1 &&
+            _li === typedWord.length - 1
+          );
           return (
             <div
               className={letterClass}
               key={_li}
+              ref={isCurrentLetter ? currentLetterRef : null}
             >
               {targetChar || typedChar}
             </div>
@@ -145,11 +178,13 @@ function TextDisplay() {
     )
   });
 
+
   return (
     <div
       className="TextDisplay"
       onKeyDown={trackKeyPress}
     >
+      <div className="Caret" style={caretPosition}/>
       <div
         className="TextDisplay-inner"
         ref={visibleAreaRef}
