@@ -14,8 +14,6 @@ function TextDisplay() {
   const [ wordIndex, setWordIndex ] = useState(0);
   const [ currentRow, setCurrentRow ] = useState(0);
   const [ currentRect, setCurrentRect ] = useState<DOMRect | undefined>();
-  const [ initialRect, setInitialRect ] = useState<DOMRect | undefined>();
-  const [ textContainerStyle, setTextContainerStyle ] = useState<any>({});
   const {
     currentTypedText,
     charAccuracy,
@@ -30,19 +28,28 @@ function TextDisplay() {
     );
   }, [currentWordRef, wordIndex])
 
-  // set initial rect
+  // focus on first word
   useEffect(() => {
     if (firstWordRef) {
-      console.log('resetting');
-      setInitialRect(
-        firstWordRef.current?.getBoundingClientRect()
-      );
-    firstWordRef.current?.focus();
+      firstWordRef.current?.focus();
     }
   }, [firstWordRef]);
 
-  // adjust row count based on current vs initial rect
+  // update current word
   useEffect(() => {
+    const currentWordIndex = currentTypedText.split(' ').length - 1;
+    if (currentWordIndex !== wordIndex) {
+      console.log(currentWordIndex);
+      setWordIndex(currentWordIndex);
+    }
+  }, [currentTypedText]);
+
+  // adjust row count based on current vs first word rect
+  useEffect(() => {
+    if (!firstWordRef) {
+      return;
+    }
+    const initialRect = firstWordRef.current?.getBoundingClientRect();
     if (!currentRect || !initialRect) {
       return;
     }
@@ -50,20 +57,10 @@ function TextDisplay() {
       (currentRect!.top - initialRect!.top)
       / initialRect!.height
     );
-    const offsetHeight = (
-      (textContainerStyle.top || initialRect!.top)
-      - initialRect!.top
-    );
     if (currentRow !== rowCount) {
       setCurrentRow(rowCount);
-      console.log(rowCount)
-      if (rowCount >= 1) {
-        setTextContainerStyle({
-          top: initialRect!.top - initialRect!.height * rowCount + offsetHeight,
-        });
-      }
     }
-  }, [currentRow, initialRect, currentRect, textContainerStyle]);
+  }, [currentRow, currentRect]);
 
   // on reaching last row, pop first row
   useEffect(() => {
@@ -105,10 +102,6 @@ function TextDisplay() {
   // render elements
   const typedTextBlocks = currentTypedText.split(' ');
   const wordBlocks = wordBank.split(' ').map((targetWord, _wi) => {
-    const currentWordIndex = typedTextBlocks.length - 1;
-    if (currentWordIndex !== wordIndex) {
-      setWordIndex(currentWordIndex);
-    }
     const typedWord = (typedTextBlocks[_wi] || '');
     const longestWordArray = [
       ...Array(Math.max(targetWord.length, typedWord.length))
@@ -165,7 +158,6 @@ function TextDisplay() {
     >
       <div
         className="TextDisplay-inner"
-        style={textContainerStyle}
         ref={visibleAreaRef}
       >
         {/* <p>{currentStats.correctChars} / {currentStats.totalChars}</p> */}
