@@ -1,4 +1,4 @@
-const DEFAULT_TEXT = 'the quick brown fox jumps over lazy dog';
+import { DEFAULT_WORDS } from '../../utils/words';
 const MIN_CHARS_WORDBANK = 120 * 5;
 
 interface ActionType {
@@ -7,20 +7,20 @@ interface ActionType {
 }
 
 interface TypedWordsStore {
-  currentTypedWords: string;
   wordPool: string;
   currentTargetWords: string;
+  currentTypedWords: string;
   charAccuracyArray?: string[][];
-  currentStats: any;
   typedWordsHistory: string[];
+  currentStats: any;
 }
 
 const initialState: TypedWordsStore = {
+  wordPool: DEFAULT_WORDS,
+  currentTargetWords: generateTargetWords(DEFAULT_WORDS),
   currentTypedWords: '',
-  wordPool: DEFAULT_TEXT,
-  currentTargetWords: generateTargetWords(DEFAULT_TEXT),
-  currentStats: {},
   typedWordsHistory: [],
+  currentStats: {},
 }
 
 function arrUnique<T>(array: T[]): T[] {
@@ -29,9 +29,9 @@ function arrUnique<T>(array: T[]): T[] {
 
 function generateTargetWords(text: string, startingText=''): string {
   const textArr = arrUnique(text.split(' '));
-  if (textArr.length < 2) {
+  if (textArr.length < 10) {
     // ensure text array is of sufficient length
-    for (let word of DEFAULT_TEXT.split(' ')) {
+    for (let word of DEFAULT_WORDS.split(' ')) {
       textArr.push(word);
     }
   }
