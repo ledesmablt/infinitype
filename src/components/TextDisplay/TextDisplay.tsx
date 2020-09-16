@@ -13,7 +13,6 @@ function TextDisplay() {
   const dispatch = useDispatch();
   const [ wordIndex, setWordIndex ] = useState(0);
   const [ currentRow, setCurrentRow ] = useState(0);
-  const [ currentRect, setCurrentRect ] = useState<DOMRect | undefined>();
   const {
     currentTypedText,
     charAccuracy,
@@ -21,38 +20,29 @@ function TextDisplay() {
     currentStats,
   } = useSelector((state: RootState) => state.typedChars);
 
-  // get current word & rect
-  useEffect(() => {
-    setCurrentRect(
-      currentWordRef.current?.getBoundingClientRect()
-    );
-  }, [currentWordRef, wordIndex])
-
-  // focus on first word
-  useEffect(() => {
-    if (firstWordRef) {
-      firstWordRef.current?.focus();
-    }
-  }, [firstWordRef]);
-
-  // update current word
-  useEffect(() => {
-    const currentWordIndex = currentTypedText.split(' ').length - 1;
-    if (currentWordIndex !== wordIndex) {
-      console.log(currentWordIndex);
-      setWordIndex(currentWordIndex);
-    }
-  }, [currentTypedText]);
-
-  // adjust row count based on current vs first word rect
+  // first render
   useEffect(() => {
     if (!firstWordRef) {
       return;
     }
-    const initialRect = firstWordRef.current?.getBoundingClientRect();
-    if (!currentRect || !initialRect) {
+    // focus on first word to enable typing
+    firstWordRef.current?.focus();
+  }, [firstWordRef]);
+  
+  // on type
+  useEffect(() => {
+    // update word index
+    const currentWordIndex = currentTypedText.split(' ').length - 1;
+    if (currentWordIndex !== wordIndex) {
+      setWordIndex(currentWordIndex);
+    }
+
+    // update row count
+    if (!firstWordRef.current || !currentWordRef.current) {
       return;
     }
+    const initialRect = firstWordRef.current?.getBoundingClientRect();
+    const currentRect = currentWordRef.current?.getBoundingClientRect();
     const rowCount = (
       (currentRect!.top - initialRect!.top)
       / initialRect!.height
@@ -60,11 +50,14 @@ function TextDisplay() {
     if (currentRow !== rowCount) {
       setCurrentRow(rowCount);
     }
-  }, [currentRow, currentRect]);
 
-  // on reaching last row, pop first row
+  // eslint-disable-next-line
+  }, [currentTypedText]);
+
+  // on row change
   useEffect(() => {
-    if (currentRow !== 2 || !visibleAreaRef) {
+    // on reaching last row, pop first row
+    if (currentRow !== 2) {
       return
     } 
     const topRowOffset = visibleAreaRef.current?.getBoundingClientRect().top;
@@ -81,7 +74,8 @@ function TextDisplay() {
     dispatch({ type: 'POP_TOP_ROW', payload: topRowTypedWords});
     dispatch({ type: 'UPDATE_ACCURACY' });
 
-  }, [currentRow, visibleAreaRef]);
+  // eslint-disable-next-line
+  }, [currentRow]);
 
   function trackKeyPress(event: React.KeyboardEvent): void {
     if (!RegExp(defaultValidChars).test(event.key)) {
