@@ -15,9 +15,10 @@ function TextDisplay() {
   const firstWordRef = useRef<HTMLDivElement>(null);
   const currentWordRef = useRef<HTMLDivElement>(null);
   const currentLetterRef = useRef<HTMLDivElement>(null);
+  const nextLetterRef = useRef<HTMLDivElement>(null);
   const visibleAreaRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
-  const [ lastAction, setLastAction ] = useState('');
+  const [ lastAction, setLastAction ] = useState<any>({});
   const [ wordIndex, setWordIndex ] = useState(0);
   const [ currentRow, setCurrentRow ] = useState(0);
   const [ caretPosition, setCaretPosition ] = useState<CaretPosition>({});
@@ -46,6 +47,7 @@ function TextDisplay() {
     }
     
     // update caret
+    const caretTopOffset = 4;
     function calcCaretPosition() {
       let rect;
       let caretPos: CaretPosition = {};
@@ -53,26 +55,45 @@ function TextDisplay() {
         // after current letter
         rect = currentLetterRef.current.getBoundingClientRect();
         caretPos = {
-          top: `${rect.top + 4}px`,
+          top: `${rect.top + caretTopOffset}px`,
           left: `calc(${rect.left + 2}px + var(--type-size)/2)`,
         };
       } else if (currentTypedWords.length > 0) {
         // caret on space edge case
-        caretPos.top = caretPosition?.top;
-        const operand = lastAction === 'APPEND_CHAR' ? '+' : '-';
-        caretPos.left = `calc(${caretPosition.left} ${operand} var(--type-size)/2)`
+        const next = nextLetterRef.current!.getBoundingClientRect();
+        const nextTop = `${next.top + caretTopOffset}px`;
+        if (
+          caretPosition.top !== nextTop &&
+          lastAction.payload === ' ' &&
+          lastAction.type === 'APPEND_CHAR'
+        ) {
+          // last word in row
+          const firstLeft = firstWordRef.current!.getBoundingClientRect().left;
+          if (currentRow < 1) {
+            caretPos.top = nextTop;
+          } else {
+            caretPos.top = caretPosition.top;
+            setCurrentRow(2);
+          }
+          caretPos.left = `${firstLeft - 2}px`;
+        } else {
+          // any other occurrence
+          caretPos.top = caretPosition?.top;
+          const operand = lastAction.type === 'APPEND_CHAR' ? '+' : '-';
+          caretPos.left = `calc(${caretPosition.left} ${operand} var(--type-size)/2)`
+        }
       } else {
         // first word
         rect = firstWordRef.current!.getBoundingClientRect();
         caretPos = {
-          top: `${rect.top + 4}px`,
+          top: `${rect.top + caretTopOffset}px`,
           left: `calc(${rect.left - 2}px`,
         }
       }
       return caretPos;
     }
-    setCaretPosition(calcCaretPosition());
-
+    const caretPos = calcCaretPosition();
+    setCaretPosition(caretPos);
 
     // update row count
     if (!firstWordRef.current || !currentWordRef.current) {
@@ -80,10 +101,13 @@ function TextDisplay() {
     }
     const initialRect = firstWordRef.current?.getBoundingClientRect();
     const currentRect = currentWordRef.current?.getBoundingClientRect();
-    const rowCount = (
-      (currentRect!.top - initialRect!.top)
-      / initialRect!.height
-    );
+    let topPos;
+    if (caretPos.top) {
+      topPos = parseInt(caretPos.top.slice(0,-2)) - caretTopOffset - initialRect!.top
+    } else {
+      topPos = (currentRect!.top - initialRect!.top)
+    }
+    const rowCount = topPos / initialRect!.height;
     if (currentRow !== rowCount) {
       setCurrentRow(rowCount);
     }
@@ -128,7 +152,7 @@ function TextDisplay() {
     }
     dispatch(dispatchContent);
     dispatch({ type: 'UPDATE_ACCURACY' });
-    setLastAction(dispatchContent.type);
+    setLastAction(dispatchContent);
   }
 
   // render elements
@@ -168,15 +192,25 @@ function TextDisplay() {
           }
           const typedChar = typedWord.charAt(_li);
           const targetChar = targetWord.charAt(_li);
-          const isCurrentLetter = (
+          let lRef = null;
+
+          if (
             _wi === typedTextBlocks.length - 1 &&
             _li === typedWord.length - 1
-          );
+          ) {
+            lRef = currentLetterRef;
+          } else if (
+            _wi === wordIndex + 1 &&
+            _li === 0 &&
+            !typedChar
+          ) {
+            lRef = nextLetterRef;
+          }
           return (
             <div
               className={letterClass}
               key={_li}
-              ref={isCurrentLetter ? currentLetterRef : null}
+              ref={lRef}
             >
               {targetChar || typedChar}
             </div>
