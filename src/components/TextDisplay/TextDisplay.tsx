@@ -81,7 +81,7 @@ function TextDisplay() {
       .split(' ')
       .slice(0, topRowWords.length);
 
-    dispatch({ type: 'POP_TOP_ROW', payload: '', topRow: topRowTypedWords});
+    dispatch({ type: 'POP_TOP_ROW', payload: topRowTypedWords});
     dispatch({ type: 'UPDATE_ACCURACY' });
 
   }, [currentRow, visibleAreaRef]);

@@ -1,7 +1,6 @@
 interface ActionType {
   type: string;
-  payload: string;
-  topRow?: string[];
+  payload: any;
 }
 
 const defaultText = 'the quick brown fox jumps over the lazy dog '
@@ -9,16 +8,20 @@ const defaultText = 'the quick brown fox jumps over the lazy dog '
 
 interface TypedCharsStore {
   currentTypedText: string;
+  initialWordBank: string;
   wordBank: string;
   charAccuracy: string[][] | null;
   currentStats: any;
+  typedWordsHistory: string[];
 }
 
 const initialState: TypedCharsStore = {
   currentTypedText: '',
+  initialWordBank: defaultText,
   wordBank: defaultText,
   charAccuracy: null,
   currentStats: {},
+  typedWordsHistory: [],
 }
 
 function getAccuracyArray(state: TypedCharsStore): string[][] {
@@ -80,14 +83,15 @@ export default function(state=initialState, action: ActionType) {
       }
     }
     case 'APPEND_CHAR': {
+      const additionalChar = (action.payload as string);
       const lastChar = state.currentTypedText.charAt(state.currentTypedText.length-1);
-      if (action.payload === ' ' && lastChar === ' ') {
+      if (additionalChar === ' ' && lastChar === ' ') {
         // ignore double space
         return state
       }
       return {
         ...state,
-        currentTypedText: state.currentTypedText + action.payload,
+        currentTypedText: state.currentTypedText + additionalChar,
       }
     }
     case 'DELETE_CHAR': {
@@ -97,25 +101,29 @@ export default function(state=initialState, action: ActionType) {
       }
     }
     case 'POP_TOP_ROW': {
-      const numRows = action.topRow?.length;
-      const sliceRow = (text: string) => text.split(' ').slice(numRows,).join(' ');
+      const topRow = (action.payload ?? []) as string[];
+      const sliceRow = (text: string) => text.split(' ').slice(topRow.length,).join(' ');
       return {
         ...state,
         currentTypedText: sliceRow(state.currentTypedText),
         wordBank: sliceRow(state.wordBank),
+        typedWordsHistory: state.typedWordsHistory.concat(topRow),
       }
     }
     case 'CLEAR_TYPED_CHARS': {
       return {
         ...state,
-        currentTypedText: initialState.currentTypedText,
+        currentTypedText: '',
+        typedWordsHistory: [],
+        wordBank: state.initialWordBank,
       };
     }
 
     case 'CHANGE_WORDS': {
       return {
         ...state,
-        wordBank: action.payload,
+        initialWordBank: (action.payload as string),
+        wordBank: (action.payload as string),
       }
     }
 
