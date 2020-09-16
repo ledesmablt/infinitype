@@ -77,10 +77,14 @@ function TextDisplay() {
           }
           caretPos.left = `${firstLeft - 2}px`;
         } else {
-          // any other occurrence
+          // on space, same row
           caretPos.top = caretPosition?.top;
-          const operand = lastAction.type === 'APPEND_CHAR' ? '+' : '-';
-          caretPos.left = `calc(${caretPosition.left} ${operand} var(--type-size)/2)`
+          if (lastAction.payload === ' ') {
+            caretPos.left = `${next.left - 2}px`;
+          } else {
+            const operand = lastAction.type === 'APPEND_CHAR' ? '+' : '-';
+            caretPos.left = `calc(${caretPosition.left} ${operand} var(--type-size)/2)`;
+          }
         }
       } else {
         // first word
