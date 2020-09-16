@@ -23,6 +23,9 @@
     color: var(--secondaryText);
     outline: none;
 }
+.Word {
+    margin: 0rem 0.5rem;
+}
 
 .Letter.correct {
     color: var(--primaryText);

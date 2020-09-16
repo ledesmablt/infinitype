@@ -65,7 +65,7 @@ function TextDisplay() {
         // first word
         rect = firstWordRef.current!.getBoundingClientRect();
         caretPos = {
-          top: `${rect.top + 3}px`,
+          top: `${rect.top + 4}px`,
           left: `calc(${rect.left - 2}px`,
         }
       }
@@ -182,7 +182,7 @@ function TextDisplay() {
             </div>
           ) 
         })
-      }&nbsp;
+      }
       </div>
     )
   });
