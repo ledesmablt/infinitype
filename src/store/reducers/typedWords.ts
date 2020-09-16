@@ -6,26 +6,25 @@ interface ActionType {
 const defaultText = 'the quick brown fox jumps over the lazy dog '
   .repeat(8).trim();
 
-interface TypedCharsStore {
-  currentTypedText: string;
+interface TypedWordsStore {
+  currentTypedWords: string;
   initialWordBank: string;
   wordBank: string;
-  charAccuracy: string[][] | null;
+  charAccuracyArray?: string[][];
   currentStats: any;
   typedWordsHistory: string[];
 }
 
-const initialState: TypedCharsStore = {
-  currentTypedText: '',
+const initialState: TypedWordsStore = {
+  currentTypedWords: '',
   initialWordBank: defaultText,
   wordBank: defaultText,
-  charAccuracy: null,
   currentStats: {},
   typedWordsHistory: [],
 }
 
-function getAccuracyArray(state: TypedCharsStore): string[][] {
-  const typedWords = state.currentTypedText.split(' ');
+function getAccuracyArray(state: TypedWordsStore): string[][] {
+  const typedWords = state.currentTypedWords.split(' ');
   const targetWords = state.wordBank.split(' ');
 
   const accuracyArray = typedWords.map((typedWord, _wi) => {
@@ -63,8 +62,8 @@ export default function(state=initialState, action: ActionType) {
         totalChars: 0,
         correctChars: 0,
       };
-      const charAccuracy = getAccuracyArray(state);
-      const currentStats = charAccuracy.reduce((acc, wordAcc) => {
+      const charAccuracyArray = getAccuracyArray(state);
+      const currentStats = charAccuracyArray.reduce((acc, wordAcc) => {
           return {
             totalWords: acc.totalWords + 1,
             correctWords: acc.correctWords + (
@@ -78,26 +77,26 @@ export default function(state=initialState, action: ActionType) {
         }, defaultReduce)
       return {
         ...state,
-        charAccuracy,
+        charAccuracyArray,
         currentStats,
       }
     }
     case 'APPEND_CHAR': {
       const additionalChar = (action.payload as string);
-      const lastChar = state.currentTypedText.charAt(state.currentTypedText.length-1);
+      const lastChar = state.currentTypedWords.charAt(state.currentTypedWords.length-1);
       if (additionalChar === ' ' && lastChar === ' ') {
         // ignore double space
         return state
       }
       return {
         ...state,
-        currentTypedText: state.currentTypedText + additionalChar,
+        currentTypedWords: state.currentTypedWords + additionalChar,
       }
     }
     case 'DELETE_CHAR': {
       return {
         ...state,
-        currentTypedText: state.currentTypedText.slice(0,-1),
+        currentTypedWords: state.currentTypedWords.slice(0,-1),
       }
     }
     case 'POP_TOP_ROW': {
@@ -105,18 +104,14 @@ export default function(state=initialState, action: ActionType) {
       const sliceRow = (text: string) => text.split(' ').slice(topRow.length,).join(' ');
       return {
         ...state,
-        currentTypedText: sliceRow(state.currentTypedText),
+        currentTypedWords: sliceRow(state.currentTypedWords),
         wordBank: sliceRow(state.wordBank),
+        charAccuracyArray: state.charAccuracyArray?.slice(topRow.length,),
         typedWordsHistory: state.typedWordsHistory.concat(topRow),
       }
     }
     case 'CLEAR_TYPED_CHARS': {
-      return {
-        ...state,
-        currentTypedText: '',
-        typedWordsHistory: [],
-        wordBank: state.initialWordBank,
-      };
+      return initialState;
     }
 
     case 'CHANGE_WORDS': {

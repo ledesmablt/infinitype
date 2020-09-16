@@ -1,9 +1,9 @@
 import { combineReducers } from 'redux';
 
 import theme from './theme';
-import typedChars from './typedChars';
+import typedWords from './typedWords';
 
 export default combineReducers({
   theme,
-  typedChars,
+  typedWords,
 });

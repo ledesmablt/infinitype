@@ -14,11 +14,11 @@ function TextDisplay() {
   const [ wordIndex, setWordIndex ] = useState(0);
   const [ currentRow, setCurrentRow ] = useState(0);
   const {
-    currentTypedText,
-    charAccuracy,
+    currentTypedWords,
+    charAccuracyArray,
     wordBank,
     currentStats,
-  } = useSelector((state: RootState) => state.typedChars);
+  } = useSelector((state: RootState) => state.typedWords);
 
   // first render
   useEffect(() => {
@@ -32,7 +32,7 @@ function TextDisplay() {
   // on type
   useEffect(() => {
     // update word index
-    const currentWordIndex = currentTypedText.split(' ').length - 1;
+    const currentWordIndex = currentTypedWords.split(' ').length - 1;
     if (currentWordIndex !== wordIndex) {
       setWordIndex(currentWordIndex);
     }
@@ -52,7 +52,7 @@ function TextDisplay() {
     }
 
   // eslint-disable-next-line
-  }, [currentTypedText]);
+  }, [currentTypedWords]);
 
   // on row change
   useEffect(() => {
@@ -67,7 +67,7 @@ function TextDisplay() {
         topRowWords.push(wordElem.textContent?.trim());
       }
     }
-    const topRowTypedWords = currentTypedText
+    const topRowTypedWords = currentTypedWords
       .split(' ')
       .slice(0, topRowWords.length);
 
@@ -94,7 +94,7 @@ function TextDisplay() {
   }
 
   // render elements
-  const typedTextBlocks = currentTypedText.split(' ');
+  const typedTextBlocks = currentTypedWords.split(' ');
   const wordBlocks = wordBank.split(' ').map((targetWord, _wi) => {
     const typedWord = (typedTextBlocks[_wi] || '');
     const longestWordArray = [
@@ -112,7 +112,7 @@ function TextDisplay() {
         }
       >{
         longestWordArray.map((_li) => {
-          const currentAccuracy = ((charAccuracy || [])[_wi] || [])[_li];
+          const currentAccuracy = ((charAccuracyArray || [])[_wi] || [])[_li];
           let letterClass = 'Letter';
           switch (currentAccuracy) {
             case 'CORRECT': {
