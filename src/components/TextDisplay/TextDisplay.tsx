@@ -22,6 +22,7 @@ function TextDisplay() {
   const [ wordIndex, setWordIndex ] = useState(0);
   const [ currentRow, setCurrentRow ] = useState(0);
   const [ caretPosition, setCaretPosition ] = useState<CaretPosition>({});
+  const [ caretCharCount, setCaretCharCount ] = useState(0);
   const {
     currentTypedWords,
     charAccuracyArray,
@@ -46,57 +47,44 @@ function TextDisplay() {
       setWordIndex(currentWordIndex);
     }
     
+    // update caret character count
+    const accArray = (charAccuracyArray ?? []);
+    const nTypedWords = accArray.length;
+    var charCount = 0;
+    for (let i=0; i <= nTypedWords - 1; i++) {
+      if (i < nTypedWords - 1) {
+        charCount += accArray[i].length;
+      } else {
+        charCount += accArray[i].filter((l) => l !== 'MISSING').length;
+      }
+    }
+    setCaretCharCount(charCount);
+    
     // update caret
     const caretTopOffset = 4;
-    function calcCaretPosition() {
-      let rect;
-      let caretPos: CaretPosition = {};
-      if (currentLetterRef.current) {
-        // after current letter
-        rect = currentLetterRef.current.getBoundingClientRect();
-        caretPos = {
-          top: `${rect.top + caretTopOffset}px`,
-          left: `calc(${rect.left + 2}px + var(--type-size)/2)`,
-        };
-      } else if (currentTypedWords.length > 0) {
-        // caret on space edge case
-        const next = nextLetterRef.current!.getBoundingClientRect();
-        const nextTop = `${next.top + caretTopOffset}px`;
-        if (
-          caretPosition.top !== nextTop &&
-          lastAction.payload === ' ' &&
-          lastAction.type === 'APPEND_CHAR'
-        ) {
-          // last word in row
-          const firstLeft = firstWordRef.current!.getBoundingClientRect().left;
-          if (currentRow < 1) {
-            caretPos.top = nextTop;
-          } else {
-            caretPos.top = caretPosition.top;
-            setCurrentRow(2);
-          }
-          caretPos.left = `${firstLeft - 2}px`;
-        } else {
-          // on space, same row
-          caretPos.top = caretPosition?.top;
-          if (lastAction.payload === ' ') {
-            caretPos.left = `${next.left - 2}px`;
-          } else {
-            const operand = lastAction.type === 'APPEND_CHAR' ? '+' : '-';
-            caretPos.left = `calc(${caretPosition.left} ${operand} var(--type-size)/2)`;
-          }
-        }
-      } else {
-        // first word
-        rect = firstWordRef.current!.getBoundingClientRect();
-        caretPos = {
-          top: `${rect.top + caretTopOffset}px`,
-          left: `calc(${rect.left - 2}px`,
-        }
+    let endOfWord = false;
+    if (currentLetterRef.current && nextLetterRef.current) {
+      if (
+        nextLetterRef.current.parentElement!.textContent !==
+        (currentWordRef.current ?? firstWordRef.current)!.textContent
+      ) {
+        endOfWord = true;
       }
-      return caretPos;
     }
-    const caretPos = calcCaretPosition();
+    let caretPos;
+    if (endOfWord) {
+      const box = currentLetterRef.current!.getBoundingClientRect();
+      caretPos = {
+        top: `${box.top + caretTopOffset}px`,
+        left: `${box.right - 2}px`
+      }
+    } else {
+      const box = nextLetterRef.current!.getBoundingClientRect();
+      caretPos = {
+        top: `${box.top + caretTopOffset}px`,
+        left: `${box.left - 2}px`,
+      }
+    }
     setCaretPosition(caretPos);
 
     // update row count
@@ -117,7 +105,7 @@ function TextDisplay() {
     }
 
   // eslint-disable-next-line
-  }, [currentTypedWords, firstWordRef, currentWordRef]);
+  }, [currentTypedWords, currentWordRef, caretCharCount]);
 
   // on row change
   useEffect(() => {
@@ -161,6 +149,7 @@ function TextDisplay() {
 
   // render elements
   const typedTextBlocks = currentTypedWords.split(' ');
+  var charCount = 0;
   const wordBlocks = currentTargetWords.split(' ').map((targetWord, _wi) => {
     const typedWord = (typedTextBlocks[_wi] || '');
     const longestWordArray = [
@@ -178,6 +167,7 @@ function TextDisplay() {
         }
       >{
         longestWordArray.map((_li) => {
+          charCount += 1;
           const currentAccuracy = ((charAccuracyArray || [])[_wi] || [])[_li];
           let letterClass = 'Letter';
           switch (currentAccuracy) {
@@ -196,6 +186,9 @@ function TextDisplay() {
           }
           const typedChar = typedWord.charAt(_li);
           const targetChar = targetWord.charAt(_li);
+          const spaceCount = currentTypedWords.length - currentTypedWords.replace(' ', '').length;
+          if (charCount === currentTypedWords.replace(' ', '').length + spaceCount + 1) {
+          }
           let lRef = null;
 
           if (
@@ -203,13 +196,12 @@ function TextDisplay() {
             _li === typedWord.length - 1
           ) {
             lRef = currentLetterRef;
-          } else if (
-            _wi === wordIndex + 1 &&
-            _li === 0 &&
-            !typedChar
-          ) {
+          }
+
+          if (charCount === caretCharCount + 1) {
             lRef = nextLetterRef;
           }
+
           return (
             <div
               className={letterClass}
