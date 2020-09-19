@@ -60,7 +60,7 @@ function TextDisplay() {
     }
     setCaretCharCount(charCount);
     
-    // update caret
+    // update caret visual position
     const caretTopOffset = 4;
     let endOfWord = false;
     if (currentLetterRef.current && nextLetterRef.current) {
@@ -84,6 +84,9 @@ function TextDisplay() {
         top: `${box.top + caretTopOffset}px`,
         left: `${box.left - 2}px`,
       }
+    }
+    if (lastAction.type === 'DELETE_CHAR' && lastAction.payload === ' ') {
+      caretPos.left = `calc(${caretPos.left} - var(--type-size)/2)`
     }
     setCaretPosition(caretPos);
 
@@ -136,7 +139,10 @@ function TextDisplay() {
     }
     let dispatchContent;
     if (event.key === 'Backspace') {
-      dispatchContent = { type: 'DELETE_CHAR' };
+      dispatchContent = {
+        type: 'DELETE_CHAR',
+        payload: currentTypedWords.charAt(currentTypedWords.length - 1)
+      };
     } else if (event.key === 'Tab') {
       dispatchContent = { type: 'CLEAR_TYPED_CHARS' };
     } else {
@@ -186,11 +192,8 @@ function TextDisplay() {
           }
           const typedChar = typedWord.charAt(_li);
           const targetChar = targetWord.charAt(_li);
-          const spaceCount = currentTypedWords.length - currentTypedWords.replace(' ', '').length;
-          if (charCount === currentTypedWords.replace(' ', '').length + spaceCount + 1) {
-          }
-          let lRef = null;
 
+          let lRef = null;
           if (
             _wi === typedTextBlocks.length - 1 &&
             _li === typedWord.length - 1
